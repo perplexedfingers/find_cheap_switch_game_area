@@ -2,7 +2,7 @@ Tell which area has the most Switch games in lowerest price.
 
 Credit to
 =========
-`eShop Checker <http://eshop-checker.xyz/beta>`_
+`eShop Checker <http://eshop-checker.xyz>`_
 
 Requirement
 ===========
@@ -10,7 +10,7 @@ Python >= 3.2
 
 Usage
 =====
-* Download ``games.json`` from `eShop Checker <http://eshop-checker.xyz/beta>`_
+* Download ``games.json`` from `eShop Checker <http://eshop-checker.xyz/games.json>`_
 * ``python3 find.py``
 
 Reference
