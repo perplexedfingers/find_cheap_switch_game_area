@@ -1,4 +1,4 @@
-Tell which area has the most Switch games in lowerest price.
+Tell which area has the most Switch games in lowerest price based on euro.
 
 Credit to
 =========
