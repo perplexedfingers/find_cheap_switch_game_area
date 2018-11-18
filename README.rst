@@ -10,8 +10,8 @@ Python >= 3.2
 
 Usage
 =====
-* Download `games.json` from eShop Checker
-* `python3 find.py`
+* Download ``games.json`` from `eShop Checker <http://eshop-checker.xyz/beta>`_
+* ``python3 find.py``
 
 Reference
 =========
