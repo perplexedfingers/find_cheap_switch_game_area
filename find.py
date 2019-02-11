@@ -56,15 +56,24 @@ country_to_currency_conversion = {'CA': 'CAD',
                                   }
 
 
-result = defaultdict(int)
+result = defaultdict(dict)
 for game in data:
+    for country in game:
+        result[country]['count'] = result[country].get('count', 0) + 1
+
     normalized_price =\
         ((area, price / rate[country_to_currency_conversion[area]])
          for area, price in game.items())
     min_ = min(normalized_price, key=lambda info: info[1])
     country = min_[0]
-    result[country] += 1
+    result[country]['win'] = result[country].get('win', 0) + 1
 
-# print out 2 char country name
-print(max(result, key=lambda country: result[country]))
+most_count = max(result, key=lambda country: result[country].get('win', 0))
+print('{country} has {count} games with good prices'
+      .format(country=most_count, count=result[most_count]['win']))
+
+most_rate = max(result, key=lambda country: result[country].get('win', 0) / result[country]['count'])
+print('{country} has {percent}% of games with good prices'
+      .format(country=most_rate, percent=round(result[most_rate]['win'] / result[most_rate]['count'] * 100, 2)))
+
 print(result)
