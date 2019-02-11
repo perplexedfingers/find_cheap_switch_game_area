@@ -58,10 +58,10 @@ country_to_currency_conversion = {'CA': 'CAD',
 
 result = defaultdict(int)
 for game in data:
-    normalized_price = iter(
-        (area, lambda: price / rate[country_to_currency_conversion[area]])
-        for area, price in game.items())
-    min_ = min(normalized_price, key=lambda info: info[1]())
+    normalized_price =\
+        ((area, price / rate[country_to_currency_conversion[area]])
+         for area, price in game.items())
+    min_ = min(normalized_price, key=lambda info: info[1])
     country = min_[0]
     result[country] += 1
 
