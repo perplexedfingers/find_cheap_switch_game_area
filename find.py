@@ -2,6 +2,7 @@ import json
 import concurrent.futures
 from gzip import decompress
 from urllib import request
+from collections import Counter
 
 # 2 char country code to 3 char currency code
 # https://www.nationsonline.org/oneworld/country_code_list.htm
@@ -52,8 +53,8 @@ def download_game_data() -> dict:
     # we only need the price of each game
     # each element in `data` looks like {'CA': 123, 'ZA': 234} <= {AREA: PRICE}
     with request.urlopen('http://eshop-checker.xyz/games.json', timeout=3) as f:
-        data = map(lambda info: info['price'],
-                   json.loads(decompress(f.read()))['list'])
+        data = [info['price'] for info in json.loads(decompress(f.read()))['list']
+                if any(info['price'].values())]
     return data
 
 
@@ -79,21 +80,44 @@ def download_data() -> (dict, dict):
 
 
 def main() -> dict:
-    result = {
-        area: {'releases': 0, 'win': 0}
+    # TODO use less passes
+    data, rate = download_data()
+
+    total_game_count = len(data)
+    full_table = {
+        area: [None] * total_game_count
         for area in country_to_currency_conversion
     }
-    data, rate = download_data()
-    for game in data:
-        for country in game:
-            result[country]['releases'] += 1
+    for i, game in enumerate(data):
+        for area in filter(lambda area: area in game, country_to_currency_conversion):
+            full_table[area][i] = game[area]
+    win_count = Counter(
+        (min(((area, price[i] / rate[country_to_currency_conversion[area]])
+              for area, price in full_table.items() if price[i]),
+             key=lambda x: x[1])[0]
+         for i in range(total_game_count))
+    )
+    result = {
+        area: {
+            'releases': len([x for x in full_table[area] if x]),
+            'win': win_count[area]
+        } for area in country_to_currency_conversion
+    }
 
-        normalized_price =\
-            ((area, price / rate[country_to_currency_conversion[area]])
-             for area, price in game.items())
-        min_ = min(normalized_price, key=lambda info: info[1])
-        country = min_[0]
-        result[country]['win'] += 1
+    # result = {
+    #     area: {'releases': 0, 'win': 0}
+    #     for area in country_to_currency_conversion
+    # }
+    # for game in data:
+    #     for country in game:
+    #         result[country]['releases'] += 1
+
+    #     normalized_price =\
+    #         ((area, price / rate[country_to_currency_conversion[area]])
+    #          for area, price in game.items())
+    #     min_ = min(normalized_price, key=lambda info: info[1])
+    #     country = min_[0]
+    #     result[country]['win'] += 1
     return result
 
 
