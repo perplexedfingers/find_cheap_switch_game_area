@@ -1,4 +1,5 @@
 import json
+import concurrent.futures
 from gzip import decompress
 from urllib import request
 
@@ -62,13 +63,27 @@ def download_currency_rate() -> dict:
     return rate
 
 
+def download_data() -> (dict, dict):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        futures = {
+            executor.submit(download_game_data): 'data',
+            executor.submit(download_currency_rate): 'rate'
+        }
+        for future in concurrent.futures.as_completed(futures):
+            type_ = futures[future]
+            if type_ == 'data':
+                data = future.result()
+            elif type_ == 'rate':
+                rate = future.result()
+    return data, rate
+
+
 def main() -> dict:
     result = {
         area: {'releases': 0, 'win': 0}
         for area in country_to_currency_conversion
     }
-    data = download_game_data()
-    rate = download_currency_rate()
+    data, rate = download_data()
     for game in data:
         for country in game:
             result[country]['releases'] += 1
@@ -89,8 +104,10 @@ if __name__ == '__main__':
     print('{country} has {count} games with good prices'
           .format(country=most_count, count=result[most_count]['win']))
 
-    most_rate = max(result, key=lambda country: result[country].get('win', 0) / result[country]['releases'])
+    highest_rate = max(
+        result, key=lambda country: result[country].get('win', 0) / result[country]['releases'])
     print('{country} has {percent}% of games with good prices'
-          .format(country=most_rate, percent=round(result[most_rate]['win'] / result[most_rate]['releases'] * 100, 2)))
+          .format(country=highest_rate,
+                  percent=round(result[highest_rate]['win'] / result[highest_rate]['releases'] * 100, 2)))
 
     print(result)
