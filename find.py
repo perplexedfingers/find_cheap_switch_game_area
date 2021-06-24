@@ -1,5 +1,4 @@
 import json
-from collections import defaultdict
 from gzip import decompress
 from urllib import request
 
@@ -63,20 +62,23 @@ def download_currency_rate() -> dict:
     return rate
 
 
-def main() -> defaultdict:
-    result = defaultdict(dict)
+def main() -> dict:
+    result = {
+        area: {'releases': 0, 'win': 0}
+        for area in country_to_currency_conversion
+    }
     data = download_game_data()
     rate = download_currency_rate()
     for game in data:
         for country in game:
-            result[country]['count'] = result[country].get('count', 0) + 1
+            result[country]['releases'] += 1
 
         normalized_price =\
             ((area, price / rate[country_to_currency_conversion[area]])
              for area, price in game.items())
         min_ = min(normalized_price, key=lambda info: info[1])
         country = min_[0]
-        result[country]['win'] = result[country].get('win', 0) + 1
+        result[country]['win'] += 1
     return result
 
 
@@ -87,8 +89,8 @@ if __name__ == '__main__':
     print('{country} has {count} games with good prices'
           .format(country=most_count, count=result[most_count]['win']))
 
-    most_rate = max(result, key=lambda country: result[country].get('win', 0) / result[country]['count'])
+    most_rate = max(result, key=lambda country: result[country].get('win', 0) / result[country]['releases'])
     print('{country} has {percent}% of games with good prices'
-          .format(country=most_rate, percent=round(result[most_rate]['win'] / result[most_rate]['count'] * 100, 2)))
+          .format(country=most_rate, percent=round(result[most_rate]['win'] / result[most_rate]['releases'] * 100, 2)))
 
     print(result)
