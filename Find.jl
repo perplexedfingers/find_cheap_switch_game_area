@@ -69,23 +69,27 @@ function compute(data::Vector{Dict{String,Any}}, rate::Dict{String,Any})
     release_count = Dict([(area, 0) for area in Base.keys(country_to_currency_conversion)])
     price_count = Dict([(area, 0) for area in Base.keys(country_to_currency_conversion)])
     for game in data
-        for country in keys(game)
+        _price, _country = Inf, missing
+        for (country, price) in filter(a -> a[1] !== 0, pairs(game))
             release_count[country] += 1
+            normalized_price = price / rate[country_to_currency_conversion[country]]
+            if normalized_price < _price
+                _price, _country = normalized_price, country
+            end
         end
-
-        normalized_price = Dict([(area, price / rate[country_to_currency_conversion[area]])
-                            for (area, price) in pairs(game)])
-        _, country = findmin(normalized_price)
-        price_count[country] += 1
+        price_count[_country] += 1
     end
     release_count, price_count
 end
 
-function main()
+function download_all()
     t_data = @async download_game_data()
     t_rate = @async download_currency_rate()
-    data = fetch(t_data)
-    rate = fetch(t_rate)
+    fetch(t_data), fetch(t_rate)
+end
+
+function main()
+    data, rate = download_all()
 
     release_count, price_count = compute(data, rate)
 
