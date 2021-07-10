@@ -86,13 +86,13 @@ function main()
     t_rate = @async download_currency_rate()
     data = fetch(t_data)
     rate = fetch(t_rate)
+
     release_count, price_count = compute(data, rate)
 
     most_count, c_country = findmax(price_count)
-    _most_rate, r_country = findmax(Dict([(area, price_win / get(release_count, area, Inf)) for (area, price_win) in price_count]))
-    most_rate = round(_most_rate * 100, digits=2)
+    most_rate, r_country = findmax(Dict([(area, price_win / get(release_count, area, Inf)) for (area, price_win) in price_count]))
 
     println("$c_country has $most_count games with good prices")
-    println("$r_country has $most_rate% of games with good prices")
+    println("$r_country has $(round(most_rate * 100, digits=2))% of games with good prices")
     println(release_count, price_count)
 end

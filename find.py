@@ -135,16 +135,16 @@ def compute(data: dict, rate: dict) -> dict:
 
 if __name__ == '__main__':
     data, rate = download_data()
+
     result = compute(data, rate)
 
     most_count = max(result, key=lambda country: result[country].get('win', 0))
-    print('{country} has {count} games with good prices'
-          .format(country=most_count, count=result[most_count]['win']))
-
     highest_rate = max(
         result, key=lambda country: result[country].get('win', 0) / result[country]['releases'])
+
+    print('{country} has {count} games with good prices'
+          .format(country=most_count, count=result[most_count]['win']))
     print('{country} has {percent}% of games with good prices'
           .format(country=highest_rate,
                   percent=round(result[highest_rate]['win'] / result[highest_rate]['releases'] * 100, 2)))
-
     print(result)
