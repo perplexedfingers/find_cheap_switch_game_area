@@ -10,7 +10,9 @@ Requirement
 ===========
 
 Python >= 3.2
+
 or
+
 Julia >= 1.6.1
 
 
@@ -20,7 +22,9 @@ Usage
 * Connected online
 
 * ``python3 find.py``
+
 or
+
 * ``julia --project=. julia.jl``
 
 
@@ -30,7 +34,7 @@ Performance?
 Python
 ------
 
-...code
+.. code-block:: python
 
     >>> import find
     >>> import timeit
@@ -48,7 +52,7 @@ Julia
 
 ``julia --project=.``
 
-...code
+.. code-block:: julia
 
     julia> include("Find.jl")
     julia> @time (for i = 1:100; compute(data, rate); end)
