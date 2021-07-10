@@ -2,7 +2,7 @@ import json
 import concurrent.futures
 from gzip import decompress
 from urllib import request
-from collections import Counter
+# from collections import Counter
 
 # 2 char country code to 3 char currency code
 # https://www.nationsonline.org/oneworld/country_code_list.htm
@@ -79,30 +79,42 @@ def download_data() -> (dict, dict):
     return data, rate
 
 
-def main() -> dict:
+def compute(data: dict, rate: dict) -> dict:
     # TODO use less passes
-    data, rate = download_data()
-
-    total_game_count = len(data)
-    full_table = {
-        area: [None] * total_game_count
+    result = {
+        area: {'releases': 0, 'win': 0}
         for area in country_to_currency_conversion
     }
-    for i, game in enumerate(data):
-        for area in filter(lambda area: area in game, country_to_currency_conversion):
-            full_table[area][i] = game[area]
-    win_count = Counter(
-        (min(((area, price[i] / rate[country_to_currency_conversion[area]])
-              for area, price in full_table.items() if price[i]),
-             key=lambda x: x[1])[0]
-         for i in range(total_game_count))
-    )
-    result = {
-        area: {
-            'releases': len([x for x in full_table[area] if x]),
-            'win': win_count[area]
-        } for area in country_to_currency_conversion
-    }
+
+    for game in data:
+        _price, _area = float('Inf'), None
+        for area, price in filter(lambda g: g[1] != 0, game.items()):
+            result[area]['releases'] += 1
+            normalized_price = price / rate[country_to_currency_conversion[area]]
+            if normalized_price < _price:
+                _price, _area = normalized_price, area
+        result[_area]['win'] += 1
+
+    # total_game_count = len(data)
+    # full_table = {
+    #     area: [None] * total_game_count
+    #     for area in country_to_currency_conversion
+    # }
+    # for i, game in enumerate(data):
+    #     for area in filter(lambda area: area in game, country_to_currency_conversion):
+    #         full_table[area][i] = game[area]
+    # win_count = Counter(
+    #     (min(((area, price[i] / rate[country_to_currency_conversion[area]])
+    #           for area, price in full_table.items() if price[i]),
+    #          key=lambda x: x[1])[0]
+    #      for i in range(total_game_count))
+    # )
+    # result = {
+    #     area: {
+    #         'releases': len([x for x in full_table[area] if x]),
+    #         'win': win_count[area]
+    #     } for area in country_to_currency_conversion
+    # }
 
     # result = {
     #     area: {'releases': 0, 'win': 0}
@@ -122,7 +134,8 @@ def main() -> dict:
 
 
 if __name__ == '__main__':
-    result = main()
+    data, rate = download_data()
+    result = compute(data, rate)
 
     most_count = max(result, key=lambda country: result[country].get('win', 0))
     print('{country} has {count} games with good prices'
