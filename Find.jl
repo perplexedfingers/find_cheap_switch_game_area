@@ -56,7 +56,7 @@ end
 function download_game_data()::Vector{Dict{String,Any}}
     url = "http://eshop-checker.xyz/games.json"
     result = download_decompressed_gzip_json(url)
-    [info["price"] for info in result["list"] if any(x -> length(values(x)) !== 0, info["price"])]
+    [info["price"] for info in result["list"] if any(x -> x !== 0, values(info["price"]))]
 end
 
 function download_currency_rate()::Dict{String,Any}
