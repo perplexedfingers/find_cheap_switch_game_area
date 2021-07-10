@@ -25,7 +25,7 @@ Usage
 
 or
 
-* ``julia --project=. julia.jl``
+* ``julia --project=. find.jl``
 
 
 Performance?
